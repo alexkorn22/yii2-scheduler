@@ -66,7 +66,6 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        Yii::debug($this->route,'test');
         return $this->render('index');
     }
 
