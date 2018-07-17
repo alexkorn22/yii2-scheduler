@@ -3,6 +3,7 @@
 /* @var $this yii\web\View */
 
 $this->title = 'My Yii Application';
+//var_dump(Yii::$aliases);
 ?>
 <div class="site-index">
 
