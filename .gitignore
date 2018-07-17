@@ -1,0 +1,7 @@
+# phpstorm project files
+.idea
+.vscode
+
+# config
+www/config/db.php
+www/config/params.php
