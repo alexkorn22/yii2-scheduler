@@ -11,6 +11,7 @@ $this->title = 'Планировщик';
     </div>
 </div>
 <script>
-    var NUM_COLUMNS = 2;
+    var NUM_COLUMNS = <?php echo $countColumns ?>;
+    var columnHeaders = <?php echo json_encode($columnHeaders) ?>;
     var events = <?php echo $events ?>;
 </script>

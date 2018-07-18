@@ -15,12 +15,12 @@ class Visit extends Model
     public $title;
     public $start;
     public $end;
-    public $column;
-
+    public $idMedWorker;
     /**
      * @var Client
      */
     protected static $client;
+    public static $medWorkers;
     protected static $nameType = 'InformationRegister_События_RecordType';
     protected static $filter = [];
     const TYPE_EVENT_VISIT = '03e07ea8-4441-11e6-98ba-005056b6e181';
@@ -38,6 +38,7 @@ class Visit extends Model
                     'end',
                     'id',
                     'title',
+                    'idMedWorker',
                 ],
                 function() {return true;}
                 ]
@@ -45,16 +46,23 @@ class Visit extends Model
 
     }
 
+    public function getColumn()
+    {
+        return self::$medWorkers[$this->idMedWorker]['column'];
+    }
+
     public static function findByDate($dateBegin = null,$dateEnd = null) {
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
         self::$filter[] = "ВидСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
         self::setFilter();
-        $data = self::$client->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
+        $data = self::$client->expand('МедРаботник')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
         $evetsOdata = $data->values();
+        self::parseMedWorker($evetsOdata);
+
         $arr = self::changeArrOdata($evetsOdata);
         $visits = [];
         foreach ($arr as $item) {
@@ -107,14 +115,38 @@ class Visit extends Model
                 'end' => $data['ДатаОкончания'],
                 'title' => 'Test' . $data['Recorder_Key'],
                 'odata' => $data,
-                'column'=> 0,
+                'idMedWorker' => $data['МедРаботник_Key']
             ];
         }, $data);
         return $result;
     }
 
+    protected static function parseMedWorker($evetsOdata) {
+        $result = [];
+        $arr = ArrayHelper::getColumn($evetsOdata, 'МедРаботник');
+        foreach ($arr as $item) {
+            $result[$item['Ref_Key']] = $item;
+        }
+        // add column
+        $count = 0;
+        foreach ($result as $key=>$item) {
+            ArrayHelper::setValue($result, [$key, 'column'], $count);
+            $count ++;
+        }
+        self::$medWorkers = $result;
+    }
+
     public static function getJsonEvents($models) {
-        return json_encode(ArrayHelper::toArray($models));
+        $result = [];
+        foreach ($models as $model) {
+            $arr = ArrayHelper::toArray($model);
+            ArrayHelper::setValue($arr,'column',$model->column);
+            ArrayHelper::setValue($arr,'editable',true);
+            ArrayHelper::setValue($arr,'title','');
+            $result[] = $arr;
+        }
+        //dd($result);
+        return json_encode($result);
     }
 
 }

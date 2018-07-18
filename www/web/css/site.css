@@ -109,3 +109,8 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+.fce-col-header {
+    background-color: #d6e9c6;
+    border: 1px solid darkred;
+}

@@ -1,21 +1,25 @@
 $(document).ready(function () {
 
     $("#calendar").fullCalendar({
-        defaultView: 'multiColAgendaWeek',
+        defaultView: 'multiColAgendaDay',
         views: {
-            multiColAgendaDay: {
-                type: 'multiColAgenda',
-                duration: { days: 1 },
-                numColumns: NUM_COLUMNS,
-                columnHeaders: ['Column 1', 'Column 2']
-            },
             multiColAgendaWeek: {
                 type: 'multiColAgenda',
                 duration: { weeks: 1 },
                 numColumns: NUM_COLUMNS,
-                columnHeaders: ['Col. 1', 'Col. 2']
-            }
+                columnHeaders: columnHeaders,
+            },
+            multiColAgendaDay: {
+                type: 'multiColAgenda',
+                duration: { days: 3 },
+                numColumns: NUM_COLUMNS,
+                columnHeaders: columnHeaders,
+            },
         },
+        minTime : "08:00:00",
+        maxTime : "19:00:00",
+        slotDuration : '00:15:00',
+        locale : 'ru',
         events: events,
         eventDrop: function(event) {
             //alert('Event was dragged to column ' + event.column);
@@ -23,7 +27,41 @@ $(document).ready(function () {
         scrollTime: moment(),
         allDaySlot: false,
         defaultDate : moment(),
+        eventClick: function(event) {
+            console.log(event);
+            alert(event.title);
+        }
     });
+});
+
+$("#calendar").swipe( {
+    swipeStatus:function(event, phase, direction, distance, duration, fingerCount, fingerData, currentDirection)
+    {
+        ;
+        if (phase=="start"){
+            // сработает в начале swipe
+        }
+        if (phase=="end"){
+            //сработает через 20 пикселей то число которое выбрали в threshold
+
+            if (direction == 'left') {
+                //сработает при движении влево
+                console.log('swipe')
+            }
+            if (direction == 'right') {
+                //сработает при движении вправо
+                console.log('swipe')
+            }
+            if (direction == 'up') {
+                //сработает при движении вверх
+            }
+            if (direction == 'down') {
+                //сработает при движении вниз
+            }
+        }
+    },
+    triggerOnTouchEnd:false,
+    threshold:50 // сработает через 20 пикселей
 });
 
 function getEvents() {
