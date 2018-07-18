@@ -1,15 +1,29 @@
 $(document).ready(function () {
-    
-    $('#calendar').fullCalendar({ 
-        defaultView : 'agendaWeek',
-        allDaySlot : false,
-        events : events,
-        eventClick: function(event) {
-            console.log(event);
-            alert(event.title);
-        }
-    })
- 
+
+    $("#calendar").fullCalendar({
+        defaultView: 'multiColAgendaWeek',
+        views: {
+            multiColAgendaDay: {
+                type: 'multiColAgenda',
+                duration: { days: 1 },
+                numColumns: NUM_COLUMNS,
+                columnHeaders: ['Column 1', 'Column 2']
+            },
+            multiColAgendaWeek: {
+                type: 'multiColAgenda',
+                duration: { weeks: 1 },
+                numColumns: NUM_COLUMNS,
+                columnHeaders: ['Col. 1', 'Col. 2']
+            }
+        },
+        events: events,
+        eventDrop: function(event) {
+            //alert('Event was dragged to column ' + event.column);
+        },
+        scrollTime: moment(),
+        allDaySlot: false,
+        defaultDate : moment(),
+    });
 });
 
 function getEvents() {

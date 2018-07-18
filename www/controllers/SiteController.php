@@ -6,6 +6,7 @@ use app\models\Event;
 use app\models\Visit;
 use Yii;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
@@ -70,6 +71,7 @@ class SiteController extends Controller
     {
         list($begin, $end) = x_week_range(date('Y-m-d'));
         $visits = Visit::findByDate($begin, $end);
+        //dd(ArrayHelper::toArray($visits));
         return $this->render('index',['events' => Visit::getJsonEvents($visits)]);
     }
 

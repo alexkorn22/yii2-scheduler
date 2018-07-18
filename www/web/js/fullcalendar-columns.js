@@ -1,20 +1,10 @@
 /*!
- * fullcalendar-columns v1.10
+ * fullcalendar-columns v1.6
  * Docs & License: https://github.com/mherrmann/fullcalendar-columns
- * (c) Michael Herrmann
+ * (c) 2015 Michael Herrmann
  */
-(function(root, factory) {
-	/**
-	 * Universal module definition following
-	 * http://davidbcalhoun.com/2014/what-is-amd-commonjs-and-umd:
-	 */
-	if (typeof define === 'function' && define.amd) // AMD
-		define([ 'jquery', 'moment' ], factory);
-	else if (typeof exports === 'object') // Node, CommonJS-like
-		module.exports = factory(require('jquery'), require('moment'));
-	else // Browser globals (root is window)
-		root.returnExports = factory(jQuery, moment);
-}(this, function($, moment) {
+
+(function($, moment) {
 	var fc = $.fullCalendar;
 	var AgendaView = fc.views.agenda.class || fc.views.agenda;
 	fc.views.multiColAgenda = AgendaView.extend({
@@ -44,7 +34,7 @@
 				|| name == 'eventDestroy' || name == 'eventClick'
 				|| name == 'eventMouseover' || name == 'eventMouseout')
 				args[2] = this.originalEvents[args[2]._id];
-			else if (name == 'dayClick' || name == 'dayRightclick' || name == 'select') {
+			else if (name == 'dayClick' || name == 'dayRightclick') {
 				var date = this._computeOriginalEvent({ start: args[2] });
 				args[2] = date.start;
 				args[2].column = date.column;
@@ -60,18 +50,6 @@
 			return this._reportEventReschedule(
 				'reportEventDrop', event, location, largeUnit, el, ev
 			);
-		},
-		reportExternalDrop: function(meta, dropLocation, el, ev, ui) {
-			var eventProps = meta.eventProps;
-			var event;
-
-			dropLocation = this._computeOriginalEvent(dropLocation);
-			if (eventProps) {
-				var eventInput = $.extend({}, eventProps, dropLocation);
-				event = this.calendar.renderEvent(eventInput, meta.stick)[0];
-			}
-
-			this._triggerExternalDrop(event, dropLocation, el, ev, ui);
 		},
 		updateEvent: function(event) {
 			$.extend(
@@ -195,18 +173,11 @@
 			fakeEvent.start = location.start.clone();
 			fakeEvent.end = location.end.clone();
 			var event = this.originalEvents[fakeEvent._id];
-			if (event == null)
-				return;
 			location = this._computeOriginalEvent(location);
+			event.column = location.column;
 			return AgendaView.prototype[rescheduleType].call(
 				this, event, location, largeUnit, el, ev
 			);
-		},
-		_triggerExternalDrop: function(event, dropLocation, el, ev, ui) {
-			// Trigger 'drop' regardless of whether element represents an event
-			this.trigger('drop', el[0], dropLocation.start, ev, ui);
-			if (event)
-				this.trigger('eventReceive', null, event);
 		}
 	});
 	var origFullCalendar = $.fn.fullCalendar;
@@ -218,4 +189,4 @@
 		}
 		return origFullCalendar.apply(this, arguments);
 	};
-}));
+})(jQuery, moment);

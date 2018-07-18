@@ -26,9 +26,8 @@ class AppAsset extends AssetBundle
     public $js = [
         'js/moment.min.js',
         'js/fullcalendar.min.js',
-        'js/faker.ru.min.js',
+        'js/fullcalendar-columns.js',
         'js/main.js',
-
     ];
     public $depends = [
         'yii\web\YiiAsset',

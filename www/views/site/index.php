@@ -11,5 +11,6 @@ $this->title = 'Планировщик';
     </div>
 </div>
 <script>
+    var NUM_COLUMNS = 2;
     var events = <?php echo $events ?>;
 </script>

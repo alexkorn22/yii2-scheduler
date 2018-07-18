@@ -15,6 +15,8 @@ class Visit extends Model
     public $title;
     public $start;
     public $end;
+    public $column;
+
     /**
      * @var Client
      */
@@ -105,6 +107,7 @@ class Visit extends Model
                 'end' => $data['ДатаОкончания'],
                 'title' => 'Test' . $data['Recorder_Key'],
                 'odata' => $data,
+                'column'=> 0,
             ];
         }, $data);
         return $result;
