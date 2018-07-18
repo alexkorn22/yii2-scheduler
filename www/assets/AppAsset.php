@@ -27,7 +27,6 @@ class AppAsset extends AssetBundle
         'js/jquery.touchSwipe.min.js',
         'js/moment.min.js',
         'js/fullcalendar.min.js',
-        'js/fullcalendar-ru.js',
         'js/fullcalendar-columns.js',
         'js/main.js',
     ];
