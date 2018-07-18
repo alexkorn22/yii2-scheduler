@@ -25,3 +25,20 @@ function dd($var)
     d($var,$caller);
     die();
 }
+
+/**
+ * @param $date
+ * @return array
+ */
+function x_week_range($date) {
+    $ts = strtotime($date);
+
+    $start = (date('w', $ts) == 1) ? $ts : strtotime('last monday', $ts);
+    $dateStart = date('Y-m-d', $start);
+
+    $end = (date('w', $ts) == 0) ? $ts : strtotime('next sunday', $ts);
+    $dateEnd = date('Y-m-d', $end);
+
+    return array($dateStart,$dateEnd);
+
+}

@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Event;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -66,7 +67,10 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        list($begin, $end) = x_week_range(date('Y-m-d'));
+        $eventsOdata = Event::findByDate($begin, $end);
+        dd($eventsOdata);
+        return $this->render('index' );
     }
 
     /**
