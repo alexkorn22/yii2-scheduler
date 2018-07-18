@@ -3,7 +3,7 @@ $(document).ready(function () {
     $('#calendar').fullCalendar({ 
         defaultView : 'agendaWeek',
         allDaySlot : false,
-        events : getEvents(),
+        events : events,
         eventClick: function(event) {
             console.log(event);
             alert(event.title);

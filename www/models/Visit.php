@@ -102,4 +102,8 @@ class Visit extends Model
         return $result;
     }
 
+    public static function getJsonEvents($models) {
+        return json_encode(ArrayHelper::toArray($models));
+    }
+
 }

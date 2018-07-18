@@ -70,7 +70,7 @@ class SiteController extends Controller
     {
         list($begin, $end) = x_week_range(date('Y-m-d'));
         $visits = Visit::findByDate($begin, $end);
-        return $this->render('index',['visits' => $visits]);
+        return $this->render('index',['events' => Visit::getJsonEvents($visits)]);
     }
 
     /**

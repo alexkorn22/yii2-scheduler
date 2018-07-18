@@ -10,3 +10,6 @@ $this->title = 'Планировщик';
 
     </div>
 </div>
+<script>
+    var events = <?php echo $events ?>;
+</script>
