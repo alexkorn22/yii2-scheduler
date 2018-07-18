@@ -11,8 +11,9 @@ use yii\helpers\ArrayHelper;
 class Visit extends Model
 {
     protected $odata = [];
-    public $start;
     public $id;
+    public $title;
+    public $start;
     public $end;
     /**
      * @var Client
@@ -28,9 +29,16 @@ class Visit extends Model
     public function rules()
     {
         return [
-            [['odata', 'start','end','id'],function() {
-                return true;
-            }]
+            [
+                [
+                    'odata',
+                    'start',
+                    'end',
+                    'id',
+                    'title',
+                ],
+                function() {return true;}
+                ]
         ];
 
     }
@@ -95,7 +103,7 @@ class Visit extends Model
                 'id' => $data['Recorder_Key'],
                 'start' => $data['ДатаНачала'],
                 'end' => $data['ДатаОкончания'],
-                'title' => $data['Recorder_Key'],
+                'title' => 'Test' . $data['Recorder_Key'],
                 'odata' => $data,
             ];
         }, $data);
