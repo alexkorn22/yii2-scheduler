@@ -21,13 +21,15 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'css/fullcalendar.min.css',
+        'css/scheduler.min.css',
         'css/site.css',
     ];
     public $js = [
         'js/jquery.touchSwipe.min.js',
         'js/moment.min.js',
         'js/fullcalendar.min.js',
-        'js/fullcalendar-columns.js',
+        'js/scheduler.min.js',
+        'js/fullcalendar-ru.js',
         'js/main.js',
     ];
     public $depends = [

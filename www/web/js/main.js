@@ -1,91 +1,60 @@
-$(document).ready(function () {
+$(function() { // document ready
 
-    $("#calendar").fullCalendar({
-        defaultView: 'multiColAgendaDay',
+    console.log(resources);
+    $('#calendar').fullCalendar({
+        schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+        defaultView: 'agendaDay',
+       // defaultDate: '2018-04-07',
+        editable: true,
+        nowIndicator: true,
+        //selectable: true,
+        eventLimit: true, // allow "more" link when too many events
+        // time
+        slotLabelFormat : "HH:mm",
+        minTime: "08:00:00",
+        maxTime: "19:00:00",
+        slotDuration : "00:15:00",
+
+        header: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'agendaDay,agendaWeek'
+        },
         views: {
-            multiColAgendaWeek: {
-                type: 'multiColAgenda',
-                duration: { weeks: 1 },
-                numColumns: NUM_COLUMNS,
-                columnHeaders: columnHeaders,
-            },
-            multiColAgendaDay: {
-                type: 'multiColAgenda',
-                duration: { days: 3 },
-                numColumns: NUM_COLUMNS,
-                columnHeaders: columnHeaders,
+            agendaTwoDay: {
+                type: 'agenda',
+                duration: { days: 2 },
+
+                // views that are more than a day will NOT do this behavior by default
+                // so, we need to explicitly enable it
+                groupByResource: true,
+
+                //// uncomment this line to group by day FIRST with resources underneath
+                groupByDateAndResource: true
             },
         },
-        minTime : "08:00:00",
-        maxTime : "19:00:00",
-        slotDuration : '00:15:00',
-        locale : 'ru',
-        events: events,
-        eventDrop: function(event) {
-            //alert('Event was dragged to column ' + event.column);
-        },
-        scrollTime: moment(),
+
+        //// uncomment this line to hide the all-day slot
         allDaySlot: false,
-        defaultDate : moment(),
-        eventClick: function(event) {
-            console.log(event);
-            alert(event.title);
+
+        resources:resources,
+        events: events,
+
+        select: function(start, end, jsEvent, view, resource) {
+            console.log(
+                'select',
+                start.format(),
+                end.format(),
+                resource ? resource.id : '(no resource)'
+            );
+        },
+        dayClick: function(date, jsEvent, view, resource) {
+            console.log(
+                'dayClick',
+                date.format(),
+                resource ? resource.id : '(no resource)'
+            );
         }
     });
+
 });
-
-$("#calendar").swipe( {
-    swipeStatus:function(event, phase, direction, distance, duration, fingerCount, fingerData, currentDirection)
-    {
-        ;
-        if (phase=="start"){
-            // сработает в начале swipe
-        }
-        if (phase=="end"){
-            //сработает через 20 пикселей то число которое выбрали в threshold
-
-            if (direction == 'left') {
-                //сработает при движении влево
-                console.log('swipe')
-            }
-            if (direction == 'right') {
-                //сработает при движении вправо
-                console.log('swipe')
-            }
-            if (direction == 'up') {
-                //сработает при движении вверх
-            }
-            if (direction == 'down') {
-                //сработает при движении вниз
-            }
-        }
-    },
-    triggerOnTouchEnd:false,
-    threshold:50 // сработает через 20 пикселей
-});
-
-function getEvents() {
-    let events = [];
-    let startDay = moment().startOf('day').add(-1,'h');
-
-    let curTime = startDay.add(8,'h');
-    let curHour = 8;
-    while (curHour < 17 ) {
-        let start =  moment().startOf('day').add(curHour,'h');
-        let end = moment().startOf('day').add(curHour,'h').add(1, "h"); 
-        events.push(
-            {
-                title: faker.commerce.productName(),
-                start: start,
-                end: end,
-                column: 0,
-                editable: true,
-                id: curHour,
-            }
-        );
-        curHour++;
-    }
-
-    
-    return events;
-}
