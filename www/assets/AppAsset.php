@@ -20,11 +20,13 @@ class AppAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
+        'css/jquery-ui.min.css',
         'css/fullcalendar.min.css',
         'css/scheduler.min.css',
         'css/site.css',
     ];
     public $js = [
+        'js/jquery-ui.min.js',
         'js/jquery.touchSwipe.min.js',
         'js/moment.min.js',
         'js/fullcalendar.min.js',

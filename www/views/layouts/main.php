@@ -72,7 +72,9 @@ AppAsset::register($this);
         <p class="pull-left">&copy; АСС <?= date('Y') ?></p>
     </div>
 </footer>
+<div id="modalContainer">
 
+</div>
 <?php $this->endBody() ?>
 </body>
 </html>

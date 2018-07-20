@@ -4,6 +4,7 @@ namespace app\models;
 
 use function GuzzleHttp\Psr7\str;
 use Kily\Tools1C\OData\Client;
+use function Sodium\add;
 use Yii;
 use yii\base\Model;
 use yii\helpers\ArrayHelper;
@@ -137,7 +138,7 @@ class Visit extends Model
             $arr = ArrayHelper::toArray($model);
             ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
             ArrayHelper::setValue($arr,'editable',true);
-            ArrayHelper::setValue($arr,'title',$model->title);
+            ArrayHelper::setValue($arr,'description',ArrayHelper::getValue($model->odata,'Recorder.Описание'));
             $result[] = $arr;
         }
         return $result;

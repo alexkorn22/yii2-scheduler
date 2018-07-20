@@ -37,22 +37,41 @@ $(function() { // document ready
         eventClick: eventClick
     });
 
+
 });
 
+var runEventClick = false;
+
 eventClick = function(event) {
-    console.log(event);
-    console.log(event.id);
+    if (runEventClick) {
+        return;
+    }
+    runEventClick = true;
     $.ajax({
-            type: 'POST',
-            url: urlEditEvent,
-            data: {
-                eventId : event.id,
-                idMedWorker : event.idMedWorker,
-                start: event.start.format(),
-                end: event.end.format(),
-                clientId: event.clientId,
-                action: 'open',
-            }
+        type: 'POST',
+        url: urlEditEvent,
+        data: {
+            eventId : event.id,
+            idMedWorker : event.idMedWorker,
+            start: event.start.format(),
+            end: event.end.format(),
+            clientId: event.clientId,
+            action: 'open',
+            title: event.title,
+            description: event.description,
+        },
+        success : function (data) {
+            $("#modalContainer").html(data);
+            $("#modalEvent").modal('show');
+            $('.datepicker').datepicker({
+                dateFormat: "yy-mm-dd"
+            });
+            runEventClick = false;
+        },
+        error : function (data) {
+            console.error(data);
+            runEventClick = false;
+        }
         });
 
 };

@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Event;
+use app\models\EventForm;
 use app\models\Visit;
 use Yii;
 use yii\filters\AccessControl;
@@ -78,7 +79,10 @@ class SiteController extends Controller
     }
 
     public function actionEditEventAjax() {
+        $model = new EventForm();
+        $model->load(Yii::$app->request->post(),'');
 
+        return $this->renderAjax('editEventModal',['model' => $model]);
     }
 
     /**
