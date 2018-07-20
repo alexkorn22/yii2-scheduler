@@ -46,11 +46,6 @@ class Visit extends Model
 
     }
 
-    public function getColumn()
-    {
-        return self::$medWorkers[$this->idMedWorker]['column'];
-    }
-
     public static function findByDate($dateBegin = null,$dateEnd = null) {
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
@@ -126,27 +121,31 @@ class Visit extends Model
         $arr = ArrayHelper::getColumn($evetsOdata, 'МедРаботник');
         foreach ($arr as $item) {
             $result[$item['Ref_Key']] = $item;
-        }
-        // add column
-        $count = 0;
-        foreach ($result as $key=>$item) {
-            ArrayHelper::setValue($result, [$key, 'column'], $count);
-            $count ++;
+            ArrayHelper::setValue($result, [$item['Ref_Key'], 'id'], $item['Ref_Key']);
+            ArrayHelper::setValue($result, [$item['Ref_Key'], 'title'], $item['Description']);
+            ArrayHelper::setValue($result, [$item['Ref_Key'], 'eventColor'], ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$item['Ref_Key']));
         }
         self::$medWorkers = $result;
     }
 
-    public static function getJsonEvents($models) {
+    public static function getArrayEvents($models) {
         $result = [];
         foreach ($models as $model) {
             $arr = ArrayHelper::toArray($model);
-            ArrayHelper::setValue($arr,'column',$model->column);
+            ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
             ArrayHelper::setValue($arr,'editable',true);
             ArrayHelper::setValue($arr,'title','');
             $result[] = $arr;
         }
-        //dd($result);
-        return json_encode($result);
+        return $result;
+    }
+
+    public static function getArrayMedWorkers() {
+        $result = [];
+        foreach (self::$medWorkers as $medWorker) {
+            $result[] = $medWorker;
+        }
+        return $result;
     }
 
 }
