@@ -77,6 +77,10 @@ class SiteController extends Controller
         ]);
     }
 
+    public function actionEditEventAjax() {
+
+    }
+
     /**
      * Login action.
      *

@@ -1,11 +1,9 @@
 $(function() { // document ready
-
-    console.log(resources);
     $('#calendar').fullCalendar({
         schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
         defaultView: 'agendaDay',
        // defaultDate: '2018-04-07',
-        editable: true,
+        //editable: true,
         nowIndicator: true,
         //selectable: true,
         eventLimit: true, // allow "more" link when too many events
@@ -14,7 +12,6 @@ $(function() { // document ready
         minTime: "08:00:00",
         maxTime: "19:00:00",
         slotDuration : "00:15:00",
-
         header: {
             left: 'prev,next today',
             center: 'title',
@@ -33,28 +30,29 @@ $(function() { // document ready
                 groupByDateAndResource: true
             },
         },
-
         //// uncomment this line to hide the all-day slot
         allDaySlot: false,
-
         resources:resources,
         events: events,
-
-        select: function(start, end, jsEvent, view, resource) {
-            console.log(
-                'select',
-                start.format(),
-                end.format(),
-                resource ? resource.id : '(no resource)'
-            );
-        },
-        dayClick: function(date, jsEvent, view, resource) {
-            console.log(
-                'dayClick',
-                date.format(),
-                resource ? resource.id : '(no resource)'
-            );
-        }
+        eventClick: eventClick
     });
 
 });
+
+eventClick = function(event) {
+    console.log(event);
+    console.log(event.id);
+    $.ajax({
+            type: 'POST',
+            url: urlEditEvent,
+            data: {
+                eventId : event.id,
+                idMedWorker : event.idMedWorker,
+                start: event.start.format(),
+                end: event.end.format(),
+                clientId: event.clientId,
+                action: 'open',
+            }
+        });
+
+};

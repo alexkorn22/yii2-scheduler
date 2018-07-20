@@ -16,6 +16,7 @@ class Visit extends Model
     public $start;
     public $end;
     public $idMedWorker;
+    public $clientId;
     /**
      * @var Client
      */
@@ -39,6 +40,7 @@ class Visit extends Model
                     'id',
                     'title',
                     'idMedWorker',
+                    'clientId',
                 ],
                 function() {return true;}
                 ]
@@ -51,7 +53,7 @@ class Visit extends Model
         self::setFilterByData($dateBegin, $dateEnd);
         self::$filter[] = "ВидСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
         self::setFilter();
-        $data = self::$client->expand('МедРаботник')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
+        $data = self::$client->expand('МедРаботник,Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
@@ -108,9 +110,10 @@ class Visit extends Model
                 'id' => $data['Recorder_Key'],
                 'start' => $data['ДатаНачала'],
                 'end' => $data['ДатаОкончания'],
-                'title' => 'Test' . $data['Recorder_Key'],
+                'title' => ArrayHelper::getValue($data,'Клиент.Description'),
                 'odata' => $data,
-                'idMedWorker' => $data['МедРаботник_Key']
+                'idMedWorker' => $data['МедРаботник_Key'],
+                'clientId' => $data['Клиент_Key'],
             ];
         }, $data);
         return $result;
@@ -134,7 +137,7 @@ class Visit extends Model
             $arr = ArrayHelper::toArray($model);
             ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
             ArrayHelper::setValue($arr,'editable',true);
-            ArrayHelper::setValue($arr,'title','');
+            ArrayHelper::setValue($arr,'title',$model->title);
             $result[] = $arr;
         }
         return $result;
