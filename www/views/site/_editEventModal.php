@@ -22,8 +22,9 @@ use yii\helpers\Html;
                 <h4 class="modal-title" id="modalEventLabel">Modal title</h4>
             </div>
             <div class="modal-body">
-                <?= $form->field($model, 'start')->textInput() ?>
-                <?= $form->field($model, 'end')->textInput() ?>
+                <?= Html::hiddenInput('action','save');?>
+                <?= $form->field($model, 'start')->input('datetime-local') ?>
+                <?= $form->field($model, 'end')->input('datetime-local')  ?>
                 <?= $form->field($model, 'idMedWorker')->textInput() ?>
                 <?= $form->field($model, 'clientId')->textInput() ?>
                 <?= $form->field($model, 'description')->textarea() ?>

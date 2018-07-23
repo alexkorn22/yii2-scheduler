@@ -51,12 +51,12 @@ eventClick = function(event) {
         type: 'POST',
         url: urlEditEvent,
         data: {
+            action: 'open',
             eventId : event.id,
             idMedWorker : event.idMedWorker,
             start: event.start.format(),
             end: event.end.format(),
             clientId: event.clientId,
-            action: 'open',
             title: event.title,
             description: event.description,
         },

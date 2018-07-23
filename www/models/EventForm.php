@@ -32,6 +32,10 @@ class EventForm extends Model
     {
         $labels = [
             'start' => 'Дата начала',
+            'end' => 'Дата окончания',
+            'idMedWorker' => 'Медработник',
+            'clientId' => 'Клиент',
+            'description' => 'Описание',
         ];
         ArrayHelper::merge(parent::attributeLabels(),$labels);
         return $labels;

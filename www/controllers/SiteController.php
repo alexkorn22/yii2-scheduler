@@ -9,6 +9,7 @@ use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
 use yii\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
@@ -79,10 +80,15 @@ class SiteController extends Controller
     }
 
     public function actionEditEventAjax() {
+        if (!Yii::$app->request->isAjax) {
+            return new NotFoundHttpException('');
+        }
         $model = new EventForm();
-        $model->load(Yii::$app->request->post(),'');
-
-        return $this->renderAjax('editEventModal',['model' => $model]);
+        if (Yii::$app->request->post('action') == 'open') {
+            $model->load(Yii::$app->request->post(),'');
+            return $this->renderAjax('_editEventModal',['model' => $model]);
+        }
+        return $this->renderAjax('_editEventModal',['model' => $model]);
     }
 
     /**
