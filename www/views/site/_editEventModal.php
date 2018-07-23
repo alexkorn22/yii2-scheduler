@@ -25,7 +25,7 @@ use \kartik\select2\Select2;
             </div>
             <div class="modal-body">
                 <?= Html::hiddenInput('action','save');?>
-                <?= Html::hiddenInput('Event[eventId]',$model->eventId);?>
+                <?= Html::hiddenInput('Event[id]',$model->id);?>
                 <?= $form->field($model, 'start')->input('datetime-local') ?>
                 <?= $form->field($model, 'end')->input('datetime-local')  ?>
                 <?= $form->field($model, 'idMedWorker')->widget(Select2::classname(), [

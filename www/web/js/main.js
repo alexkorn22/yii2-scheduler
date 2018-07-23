@@ -52,7 +52,7 @@ eventClick = function(event) {
         url: urlEditEvent,
         data: {
             action: 'open',
-            eventId : event.id,
+            id : event.id,
             idMedWorker : event.idMedWorker,
             start: event.start.format(),
             end: event.end.format(),

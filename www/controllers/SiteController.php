@@ -73,10 +73,23 @@ class SiteController extends Controller
     public function actionIndex()
     {
         list($begin, $end) = x_week_range(date('Y-m-d'));
-        $visits = Visit::findByDate($begin, $end);
+        $odata = OData::getInstance();
+        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end));
+        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
+        $events = ArrayHelper::merge($emptyEvents,$visits);
+        $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
+        $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
+        $resources = [];
+        foreach ($dataMedWorkers as $item) {
+            $resources[] = [
+                'id' => $item['Ref_Key'],
+                'title' => $item['Description'],
+                'eventColor' => ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$item['Ref_Key']),
+            ];
+        }
         return $this->render('index',[
-            'events' => Visit::getArrayEvents($visits),
-            'resources' => Visit::getArrayMedWorkers(),
+            'events' => ArrayHelper::toArray($events),
+            'resources' => $resources,
         ]);
     }
 

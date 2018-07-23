@@ -54,12 +54,12 @@ class Visit extends Model
         self::setFilterByData($dateBegin, $dateEnd);
         self::$filter[] = "ВидСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
         self::setFilter();
-        $data = self::$client->expand('МедРаботник,Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
+        $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
         $evetsOdata = $data->values();
-        self::parseMedWorker($evetsOdata);
+        //self::parseMedWorker($evetsOdata);
 
         $arr = self::changeArrOdata($evetsOdata);
         $visits = [];
@@ -139,7 +139,9 @@ class Visit extends Model
             ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
             ArrayHelper::setValue($arr,'editable',true);
             ArrayHelper::setValue($arr,'description',ArrayHelper::getValue($model->odata,'Recorder.Описание'));
-            $result[] = $arr;
+            $event = new Event();
+            $event->load($arr,'');
+            $result[] = $event;
         }
         return $result;
     }
