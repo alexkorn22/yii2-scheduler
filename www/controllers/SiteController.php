@@ -3,11 +3,12 @@
 namespace app\controllers;
 
 use app\models\Event;
-use app\models\EventForm;
+use app\models\OData;
 use app\models\Visit;
 use Yii;
 use yii\filters\AccessControl;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -79,16 +80,35 @@ class SiteController extends Controller
         ]);
     }
 
+    public function actionTest()
+    {
+        $odata = OData::getInstance();
+        return $this->render('_test',[
+            'events' => [],
+            'medWorkers' => ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description'),
+            'clients' => ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),
+        ]);
+    }
+
     public function actionEditEventAjax() {
-        if (!Yii::$app->request->isAjax) {
-            return new NotFoundHttpException('');
-        }
-        $model = new EventForm();
-        if (Yii::$app->request->post('action') == 'open') {
+        $model = new Event();
+        if (Yii::$app->request->post('action') == 'open' && Yii::$app->request->isAjax) {
             $model->load(Yii::$app->request->post(),'');
-            return $this->renderAjax('_editEventModal',['model' => $model]);
+            $odata = OData::getInstance();
+            return $this->renderAjax('_editEventModal',[
+                'model' => $model,
+                'medWorkers' => ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description'),
+                'clients' => ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),
+            ]);
         }
-        return $this->renderAjax('_editEventModal',['model' => $model]);
+        // POST save
+        if (Yii::$app->request->post('action') == 'save') {
+            $model->load(Yii::$app->request->post());
+            $model->saveVisit();
+            return $this->redirect(Url::home());
+        }
+
+        return new NotFoundHttpException('');
     }
 
     /**

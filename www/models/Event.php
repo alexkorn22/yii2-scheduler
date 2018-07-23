@@ -5,7 +5,7 @@ namespace app\models;
 use yii\base\Model;
 use yii\helpers\ArrayHelper;
 
-class EventForm extends Model
+class Event extends Model
 {
 
     public $eventId;
@@ -41,5 +41,11 @@ class EventForm extends Model
         return $labels;
     }
 
+    public function saveVisit()
+    {
+        $odata = OData::getInstance();
+        $odata->saveVisit($this);
+        return true;
+    }
 
 }

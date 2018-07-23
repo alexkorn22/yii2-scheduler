@@ -1,10 +1,12 @@
 <?php
 use yii\bootstrap\ActiveForm;
 use yii\helpers\Html;
+use \kartik\select2\Select2;
+
 /* @var $this yii\web\View */
-/* @var $model \app\models\EventForm */
+/* @var $model \app\models\Event */
 ?>
-<div class="modal" id="modalEvent" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal" id="modalEvent" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <?php $form = ActiveForm::begin([
@@ -23,14 +25,28 @@ use yii\helpers\Html;
             </div>
             <div class="modal-body">
                 <?= Html::hiddenInput('action','save');?>
+                <?= Html::hiddenInput('Event[eventId]',$model->eventId);?>
                 <?= $form->field($model, 'start')->input('datetime-local') ?>
                 <?= $form->field($model, 'end')->input('datetime-local')  ?>
-                <?= $form->field($model, 'idMedWorker')->textInput() ?>
-                <?= $form->field($model, 'clientId')->textInput() ?>
+                <?= $form->field($model, 'idMedWorker')->widget(Select2::classname(), [
+                        'data' => $medWorkers,
+                        'options' => ['placeholder' => 'Выберите медработника ...'],
+                        'pluginOptions' => [
+                            'allowClear' => true
+                        ]
+                    ]);?>
+                <?= $form->field($model, 'clientId')->widget(Select2::classname(), [
+                    'data' => $clients,
+                    'options' => ['placeholder' => 'Выберите клиента ...'],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ]
+                ]); ?>
                 <?= $form->field($model, 'description')->textarea() ?>
+
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <?= Html::submitButton('Сохранить',['class'=> 'btn btn-primary'])?>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
             <?php ActiveForm::end() ?>
