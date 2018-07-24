@@ -13,7 +13,7 @@ use \kartik\select2\Select2;
                 'id' => 'editEvent',
                 'options' => ['class' => 'form-horizontal'],
                 'fieldConfig' => [
-                    'template' => '{label}<div class="col-sm-9">{input}</div>',
+                    'template' => '{label}<div class="col-sm-9">{input}<span class="help-block">{error}</span></div>',
                     'labelOptions' => ['class' => 'col-sm-3 control-label'],
                     'inputOptions' => ['class' => 'form-control']
                 ],
@@ -21,7 +21,13 @@ use \kartik\select2\Select2;
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
                 </button>
-                <h4 class="modal-title" id="modalEventLabel">Modal title</h4>
+                <h4 class="modal-title" id="modalEventLabel">
+                    <? if ($model->id):?>
+                        Редактирование события
+                    <? else:?>
+                        Создание события
+                    <? endif;?>
+                </h4>
             </div>
             <div class="modal-body">
                 <?= Html::hiddenInput('action','save');?>

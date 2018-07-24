@@ -53,9 +53,8 @@ class OData extends Model
             $this->client->filter($strResult);
         }
         $data = $this->client->{'Catalog_Сотрудники'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return [];
         }
         return ArrayHelper::index($data->values(), 'Ref_Key');
     }
@@ -63,9 +62,8 @@ class OData extends Model
     public function getClients()
     {
         $data = $this->client->{'Catalog_Клиенты'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return [];
         }
         return ArrayHelper::index($data->values(), 'Ref_Key');
     }
@@ -73,9 +71,8 @@ class OData extends Model
     public function getEventTypes()
     {
         $data = $this->client->{'Catalog_ВидыСобытий'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return [];
         }
         return ArrayHelper::index($data->values(), 'Ref_Key');
     }
@@ -90,9 +87,8 @@ class OData extends Model
         $this->setFilter();
 
         $data = $this->client->{'InformationRegister_ГрафикиРаботыВрачей_RecordType'}->get();
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return [];
         }
         return $data->values();
     }
@@ -123,22 +119,35 @@ class OData extends Model
             $data = $this->client->{'Document_Событие'}->create($dataEvent);
             $event->id = $data->getLastId();
         }
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
-        }
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return false;
         }
         $data = $this->client->{'Document_Событие'}->id($event->id)->post();
-        if(!$this->client->isOk()) {
-            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
-            die();
+        if(!$this->isClientOk($data)) {
+            return false;
         }
+        return true;
     }
 
     // OTHER
+
+    protected function isClientOk($data = [])
+    {
+        if(!$this->client->isOk()) {
+            $msg =[
+                'Ошибка при обращении OData: ',
+                $this->client->getHttpErrorCode(),
+                $this->client->getHttpErrorMessage(),
+                $this->client->getErrorCode(),
+                $this->client->getErrorMessage(),
+                $data->toArray(),
+            ];
+            Yii::warning($msg,'warning_odata');
+           // die();
+            return false;
+        }
+        return true;
+    }
 
     protected function setFilter()
     {

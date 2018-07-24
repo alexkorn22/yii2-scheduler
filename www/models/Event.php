@@ -15,7 +15,7 @@ class Event extends Model
     public $clientId;
     public $description;
     public $title;
-    public $editable = true;
+    public $editable = false;
     public $typeId;
     public $resourceId; // вспомагательное поле
 
@@ -25,9 +25,17 @@ class Event extends Model
     public function rules()
     {
         return [
-            [['start', 'end', 'idMedWorker', 'clientId', 'description', 'title', 'id','resourceId','typeId'], function() {
-            return true;
-            }],
+            [
+                ['start', 'end', 'idMedWorker', 'clientId', 'resourceId','typeId'],
+                'required',
+            ],
+            [
+                ['description', 'title', 'id'],
+                'safe',
+            ],
+            [
+                'end', 'compare', 'compareAttribute' => 'start', 'operator' => '>', 'type' => 'string',
+            ],
         ];
     }
 

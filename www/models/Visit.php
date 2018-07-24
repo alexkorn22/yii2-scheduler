@@ -100,12 +100,24 @@ class Visit extends Model
     }
 
     protected static function checkOk($data) {
+
+
         if(!self::$client->isOk()) {
-            var_dump('Something went wrong: ',self::$client->getHttpErrorCode(),self::$client->getHttpErrorMessage(),self::$client->getErrorCode(),self::$client->getErrorMessage(),$data->toArray());
+            $msg =[
+                'Ошибка при обращении OData: ',
+                self::$client->getHttpErrorCode(),
+                self::$client->getHttpErrorMessage(),
+                self::$client->getErrorCode(),
+                self::$client->getErrorMessage(),
+                $data->toArray(),
+            ];
+            Yii::warning($msg,'warning_odata');
             return false;
         }
         return true;
     }
+
+
 
     protected  static function changeArrOdata($data) {
         $result = array_map(function($data) {
