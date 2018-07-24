@@ -11,6 +11,7 @@ use yii\helpers\ArrayHelper;
 
 class OData extends Model
 {
+    const DATE_FORMAT = 'Y-m-d\TH:i:s';
     protected static $instance;
     /**
      * @var Client
@@ -100,9 +101,7 @@ class OData extends Model
 
     public function saveVisit(Event $event)
     {
-        $data = $this->client->{'Catalog_Клиенты'}->get($event->clientId,null,['query'=>['$orderby'=>'Description asc']])->values();
-        //dd($data);
-        $data = $this->client->{'Document_Событие'}->update($event->id,[
+        $dataEvent = [
             'Описание'=> $event->description,
             'ДатаНачала'=> date('Y-m-d\TH:i:s',strtotime($event->start)),
             'ДатаОкончания'=> date('Y-m-d\TH:i:s', strtotime($event->end)),
@@ -115,7 +114,15 @@ class OData extends Model
                     'Выполнено' => false,
                 ]
             ]
-        ]);
+        ];
+        if ($event->id) {
+            $data = $this->client->{'Document_Событие'}->update($event->id,$dataEvent);
+        } else {
+            $dataEvent['Date'] = date(self::DATE_FORMAT);
+            $dataEvent['ТипСобытия_Key'] = Visit::TYPE_EVENT_VISIT;
+            $data = $this->client->{'Document_Событие'}->create($dataEvent);
+            $event->id = $data->getLastId();
+        }
         if(!$this->client->isOk()) {
             var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
             die();
