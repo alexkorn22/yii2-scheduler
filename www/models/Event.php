@@ -43,17 +43,43 @@ class Event extends Model
         return $labels;
     }
 
-    public static function loadFromCalendarMedWorkers(array $data)
+    public static function loadFromCalendarMedWorkers(array $data, $visits)
     {
         $models = [];
+        $visits = Visit::arrayForCalendarMedWorkers($visits);
+
         foreach ($data as $item) {
             $curTime = strtotime($item['ВремяНачала']) - strtotime('0001-01-01');
             $endDay = strtotime($item['ВремяОкончания']) - strtotime('0001-01-01');
+            $day = date('Y-m-d',strtotime($item['Дата']));
+            $dayVisits = ArrayHelper::getValue($visits,$day,[]);
+
             while ($curTime < $endDay) {
-                $model = new self();
-                $model->start = date(self::DATE_FORMAT,strtotime($item['Дата'])  + $curTime);
+
+                $startTime = strtotime($item['Дата'])  + $curTime;
                 $curTime += $item['РегулярностьПриема'] * 60;
-                $model->end = date(self::DATE_FORMAT,strtotime($item['Дата'])  + $curTime);
+                $endTime = strtotime($item['Дата']) + $curTime;
+
+                foreach ($dayVisits as $dayVisit) {
+                    if ($dayVisit['idMedWorker'] != $item['МедРаботник_Key'] ) {
+                        continue;
+                    }
+                    $startDayVisit = strtotime($dayVisit['start']);
+                    $endDayVisit = strtotime($dayVisit['end']);
+                    if ($startTime >= $startDayVisit && $startTime < $endDayVisit) {
+                        $startTime = $endDayVisit;
+                    }
+                    if ($endTime > $startDayVisit && $endTime <= $endDayVisit) {
+                        $endTime = $startDayVisit;
+                    }
+                }
+
+                if ($startTime >= $endTime) {
+                    continue;
+                }
+                $model = new self();
+                $model->start = date(Event::DATE_FORMAT, $startTime);
+                $model->end = date(self::DATE_FORMAT,$endTime);
                 $model->idMedWorker = $item['МедРаботник_Key'];
                 $model->resourceId = $item['МедРаботник_Key'];
                 $models[] = $model;
@@ -62,12 +88,12 @@ class Event extends Model
         return $models;
     }
 
-
     public function saveVisit()
     {
         $odata = OData::getInstance();
         $odata->saveVisit($this);
         return true;
     }
+
 
 }

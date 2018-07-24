@@ -154,4 +154,15 @@ class Visit extends Model
         return $result;
     }
 
+    public static function arrayForCalendarMedWorkers($visits)
+    {
+        $result = [];
+        $visits = ArrayHelper::toArray($visits);
+        foreach ($visits as $visit) {
+            $day = date('Y-m-d',strtotime($visit['start']));
+            $result[$day][] = $visit;
+        }
+        return $result;
+    }
+
 }

@@ -74,8 +74,8 @@ class SiteController extends Controller
     {
         list($begin, $end) = x_week_range(date('Y-m-d'));
         $odata = OData::getInstance();
-        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end));
         $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
+        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
         $events = ArrayHelper::merge($emptyEvents,$visits);
         $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
         $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
