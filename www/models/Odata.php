@@ -69,6 +69,16 @@ class OData extends Model
         return ArrayHelper::index($data->values(), 'Ref_Key');
     }
 
+    public function getEventTypes()
+    {
+        $data = $this->client->{'Catalog_ВидыСобытий'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
+        if(!$this->client->isOk()) {
+            var_dump('Something went wrong: ',$this->client->getHttpErrorCode(),$this->client->getHttpErrorMessage(),$this->client->getErrorCode(),$this->client->getErrorMessage(),$data->toArray());
+            die();
+        }
+        return ArrayHelper::index($data->values(), 'Ref_Key');
+    }
+
     public function eventsOnGraphic($start, $end)
     {
         $this->_filter = [];
@@ -97,6 +107,7 @@ class OData extends Model
             'ДатаНачала'=> date('Y-m-d\TH:i:s',strtotime($event->start)),
             'ДатаОкончания'=> date('Y-m-d\TH:i:s', strtotime($event->end)),
             'МедРаботник_Key' => $event->idMedWorker,
+            'ВидСобытия_Key' => $event->typeId,
             'Участники' => [
                 [
                     'LineNumber' => '1',

@@ -59,6 +59,7 @@ eventClick = function(event) {
             clientId: event.clientId,
             title: event.title,
             description: event.description,
+            typeId: event.typeId,
         },
         success : function (data) {
             $("#modalContainer").html(data);

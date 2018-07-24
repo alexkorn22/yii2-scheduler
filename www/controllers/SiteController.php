@@ -110,6 +110,7 @@ class SiteController extends Controller
             $odata = OData::getInstance();
             return $this->renderAjax('_editEventModal',[
                 'model' => $model,
+                'typeEvents' => ArrayHelper::map($odata->eventTypes,'Ref_Key', 'Description'),
                 'medWorkers' => ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description'),
                 'clients' => ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),
             ]);

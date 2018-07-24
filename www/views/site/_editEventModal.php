@@ -28,6 +28,13 @@ use \kartik\select2\Select2;
                 <?= Html::hiddenInput('Event[id]',$model->id);?>
                 <?= $form->field($model, 'start')->input('datetime-local') ?>
                 <?= $form->field($model, 'end')->input('datetime-local')  ?>
+                <?= $form->field($model, 'typeId')->widget(Select2::classname(), [
+                    'data' => $typeEvents,
+                    'options' => ['placeholder' => 'Выберите вид события ...'],
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ]
+                ]); ?>
                 <?= $form->field($model, 'idMedWorker')->widget(Select2::classname(), [
                         'data' => $medWorkers,
                         'options' => ['placeholder' => 'Выберите медработника ...'],

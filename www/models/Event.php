@@ -16,6 +16,7 @@ class Event extends Model
     public $description;
     public $title;
     public $editable = true;
+    public $typeId;
     public $resourceId; // вспомагательное поле
 
     /**
@@ -24,7 +25,7 @@ class Event extends Model
     public function rules()
     {
         return [
-            [['start', 'end', 'idMedWorker', 'clientId', 'description', 'title', 'id','resourceId'], function() {
+            [['start', 'end', 'idMedWorker', 'clientId', 'description', 'title', 'id','resourceId','typeId'], function() {
             return true;
             }],
         ];
@@ -38,6 +39,7 @@ class Event extends Model
             'idMedWorker' => 'Медработник',
             'clientId' => 'Клиент',
             'description' => 'Описание',
+            'typeId' => 'Тип визита',
         ];
         ArrayHelper::merge(parent::attributeLabels(),$labels);
         return $labels;

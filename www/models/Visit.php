@@ -18,6 +18,7 @@ class Visit extends Model
     public $end;
     public $idMedWorker;
     public $clientId;
+    public $typeId;
     /**
      * @var Client
      */
@@ -25,7 +26,7 @@ class Visit extends Model
     public static $medWorkers;
     protected static $nameType = 'InformationRegister_События_RecordType';
     protected static $filter = [];
-    const TYPE_EVENT_VISIT = '03e07ea8-4441-11e6-98ba-005056b6e181';
+    const TYPE_EVENT_VISIT = '4363fb80-379e-11e6-a303-005056b6e181'; // тип события визит
 
     /**
      * @return array the validation rules.
@@ -42,6 +43,7 @@ class Visit extends Model
                     'title',
                     'idMedWorker',
                     'clientId',
+                    'typeId',
                 ],
                 function() {return true;}
                 ]
@@ -52,7 +54,7 @@ class Visit extends Model
     public static function findByDate($dateBegin = null,$dateEnd = null) {
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
-        self::$filter[] = "ВидСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
+        self::$filter[] = "ТипСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
         self::setFilter();
         $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
@@ -115,6 +117,7 @@ class Visit extends Model
                 'odata' => $data,
                 'idMedWorker' => $data['МедРаботник_Key'],
                 'clientId' => $data['Клиент_Key'],
+                'typeId' => $data['ВидСобытия_Key'],
             ];
         }, $data);
         return $result;
