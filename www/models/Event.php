@@ -47,7 +47,7 @@ class Event extends Model
             'idMedWorker' => 'Медработник',
             'clientId' => 'Клиент',
             'description' => 'Описание',
-            'typeId' => 'Тип визита',
+            'typeId' => 'Вид визита',
         ];
         ArrayHelper::merge(parent::attributeLabels(),$labels);
         return $labels;
