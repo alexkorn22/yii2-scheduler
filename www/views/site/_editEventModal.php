@@ -36,6 +36,7 @@ use \kartik\select2\Select2;
                 <?= $form->field($model, 'end')->input('datetime-local')  ?>
                 <?= $form->field($model, 'typeId')->widget(Select2::classname(), [
                     'data' => $typeEvents,
+                    'language' => 'ru',
                     'options' => ['placeholder' => 'Выберите вид события ...'],
                     'pluginOptions' => [
                         'allowClear' => true
@@ -43,16 +44,25 @@ use \kartik\select2\Select2;
                 ]); ?>
                 <?= $form->field($model, 'idMedWorker')->widget(Select2::classname(), [
                         'data' => $medWorkers,
+                        'language' => 'ru',
                         'options' => ['placeholder' => 'Выберите медработника ...'],
                         'pluginOptions' => [
                             'allowClear' => true
                         ]
                     ]);?>
                 <?= $form->field($model, 'clientId')->widget(Select2::classname(), [
-                    'data' => $clients,
+                    'initValueText' => $clientText,
+                    'language' => 'ru',
                     'options' => ['placeholder' => 'Выберите клиента ...'],
                     'pluginOptions' => [
-                        'allowClear' => true
+                        'allowClear' => true,
+                       // 'minimumInputLength' => 3,
+                        'ajax' => [
+                            'url' => \yii\helpers\Url::to(['site/clients-list']),
+                            'dataType' => 'json',
+                            'delay' => 600,
+                            'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
+                        ],
                     ]
                 ]); ?>
                 <?= $form->field($model, 'description')->textarea() ?>

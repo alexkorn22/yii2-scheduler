@@ -70,10 +70,17 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($clear_cache = null)
     {
-        list($begin, $end) = x_week_range(date('Y-m-d'));
+        if ($clear_cache == 'true') {
+            Yii::$app->cache->flush();
+        }
         $odata = OData::getInstance();
+        // кеширование клиентов
+       // Yii::$app->cache->set('editEventAjax_clients',ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),3600);
+
+        list($begin, $end) = x_week_range(date('Y-m-d'));
+
         $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
         $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
         $events = ArrayHelper::merge($emptyEvents,$visits);
@@ -93,26 +100,28 @@ class SiteController extends Controller
         ]);
     }
 
-    public function actionTest()
-    {
-        $odata = OData::getInstance();
-        return $this->render('_test',[
-            'events' => [],
-            'medWorkers' => ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description'),
-            'clients' => ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),
-        ]);
-    }
-
     public function actionEditEventAjax() {
         $model = new Event();
         if (Yii::$app->request->post('action') == 'open' && Yii::$app->request->isAjax) {
             $model->load(Yii::$app->request->post(),'');
-            $odata = OData::getInstance();
+            $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
+                $odata = OData::getInstance();
+                return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
+            },3600*24*30);
+            $typeEvents = Yii::$app->cache->getOrSet('editEventAjax_typeEvents',function (){
+                $odata = OData::getInstance();
+                return ArrayHelper::map($odata->eventTypes,'Ref_Key', 'Description');
+            },3600*24*30);
+            $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
+                $odata = OData::getInstance();
+                return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+            },60*5);
+
             return $this->renderAjax('_editEventModal',[
                 'model' => $model,
-                'typeEvents' => ArrayHelper::map($odata->eventTypes,'Ref_Key', 'Description'),
-                'medWorkers' => ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description'),
-                'clients' => ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),
+                'typeEvents' => $typeEvents,
+                'medWorkers' => $medWorkers,
+                'clientText' => $clients[$model->clientId],
             ]);
         }
         // POST save
@@ -123,6 +132,40 @@ class SiteController extends Controller
         }
 
         return new NotFoundHttpException('');
+    }
+
+    public function actionClientsList($q = null, $id = null)
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        $out = ['results'];
+        $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+        },60*5);
+        $q = trim($q);
+        if ($q) {
+            foreach ($clients as $key=>$client) {
+                if (mb_stripos($client, $q) !== false) {
+                    $out['results'][] = [
+                        'id' => $key,
+                        'text' => $client,
+                    ];
+                }
+            }
+        } else {
+            $i = 0;
+            foreach ($clients as $key=>$client) {
+                $i++;
+                $out['results'][] = [
+                    'id' => $key,
+                    'text' => $client,
+                ];
+                if ($i == 20) {
+                    break;
+                }
+            }
+        }
+        return $out;
     }
 
     /**
