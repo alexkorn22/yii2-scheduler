@@ -36,6 +36,7 @@ class Event extends Model
             [
                 'end', 'compare', 'compareAttribute' => 'start', 'operator' => '>', 'type' => 'string',
             ],
+            ['editable','default','value'=> false],
         ];
     }
 

@@ -76,52 +76,28 @@ class SiteController extends Controller
         if ($clear_cache == 'true') {
             Yii::$app->cache->flush();
         }
-//        $odata = OData::getInstance();
-//        // кеширование клиентов
-//       // Yii::$app->cache->set('editEventAjax_clients',ArrayHelper::map($odata->clients,'Ref_Key', 'Description'),3600);
-//
-//        list($begin, $end) = x_week_range(date('Y-m-d'));
-//
-//        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
-//        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
-//        $events = ArrayHelper::merge($emptyEvents,$visits);
-//        $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
-//        $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
-//        $resources = [];
-//        foreach ($dataMedWorkers as $item) {
-//            $resources[] = [
-//                'id' => $item['Ref_Key'],
-//                'title' => $item['Description'],
-//                'eventColor' => ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$item['Ref_Key']),
-//            ];
-//        }
-//        return $this->render('index',[
-//            'events' => ArrayHelper::toArray($events),
-//            'resources' => $resources,
-//        ]);
+        $odata = OData::getInstance();
+        // кеширование
+        $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
+        },3600*24*30);
+        $typeEvents = Yii::$app->cache->getOrSet('editEventAjax_typeEvents',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->eventTypes,'Ref_Key', 'Description');
+        },3600*24*30);
+        $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+        },3600);
 
-        Yii::$app->session->remove('tempResourcesList');
-        return $this->render('index',[
-            'events' => [],
-            'resources' => [],
-        ]);
-    }
 
-    public function actionEventList($start, $end)
-    {
-        Yii::$app->response->format = Response::FORMAT_JSON;
-        list($events, $dataMedWorkers) = $this->getDataForCalendar($start, $end);
-        //дополнения массивом медработников с сессии
-        $tempRes = Yii::$app->session->get('tempResourcesList',[]);
-        foreach ($tempRes as $item) {
-            if (isset($dataMedWorkers[$item['id']])) {
-                continue;
-            }
-            $dataMedWorkers[$item['id']] = [
-                'Ref_Key' => $item['id'],
-                'Description' => $item['title'],
-            ];
-        }
+        list($begin, $end) = x_week_range(date('Y-m-d'));
+        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
+        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
+        $events = ArrayHelper::merge($emptyEvents,$visits);
+        $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
+        $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
         $resources = [];
         foreach ($dataMedWorkers as $item) {
             $resources[] = [
@@ -130,15 +106,34 @@ class SiteController extends Controller
                 'eventColor' => ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$item['Ref_Key']),
             ];
         }
-        Yii::$app->session->set('tempResourcesList',$resources);
-        return  ArrayHelper::toArray($events);
+        $events = ArrayHelper::toArray($events);
+        $data[$begin] = $events;
+        $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+        },3600);
+        return $this->render('index',[
+            'events' => [],
+            'resources' => $resources,
+            'currentPeriod' => ['start' => $begin,'end' => $end],
+        ]);
     }
 
-    public function actionResourceList($start, $end)
+    public function actionEventList($start, $end)
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        $out = Yii::$app->session->get('tempResourcesList',[]);
-        return $out;
+        list($begin, $end) = x_week_range(date('Y-m-d',$start));
+        $data = Yii::$app->cache->get('eventList');
+        if (!isset($data[$begin])) {
+            $data[$begin] = $this->getEventsForCalendar($begin, $end);
+            Yii::$app->cache->set('eventList',$data, 3600);
+        }
+        return [
+            'events' => $data[$begin],
+            'start' => $begin,
+            'end' => $end,
+        ];
+
     }
 
     public function actionEditEventAjax() {
@@ -156,7 +151,7 @@ class SiteController extends Controller
             $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
                 $odata = OData::getInstance();
                 return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
-            },60*5);
+            },3600);
 
             return $this->renderAjax('_editEventModal',[
                 'model' => $model,
@@ -271,17 +266,14 @@ class SiteController extends Controller
         return $this->render('about');
     }
 
-    protected function getDataForCalendar($start, $end)
+    protected function getEventsForCalendar($begin, $end)
     {
-        $begin = date('Y-m-d',strtotime($start));
-        $end = date('Y-m-d',strtotime($end));
         $odata = OData::getInstance();
         $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
         $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
         $events = ArrayHelper::merge($emptyEvents,$visits);
-        $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
-        $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
-        return [$events, $dataMedWorkers];
+        $events = ArrayHelper::toArray($events);
+        return $events;
     }
 
 }
