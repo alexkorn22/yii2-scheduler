@@ -12,6 +12,7 @@ $(function() { // document ready
         minTime: "08:00:00",
         maxTime: "19:00:00",
         slotDuration : "00:15:00",
+        navLinks: true,
         header: {
             left: 'prev,next today',
             center: 'title',
@@ -32,13 +33,18 @@ $(function() { // document ready
         },
         //// uncomment this line to hide the all-day slot
         allDaySlot: false,
-        resources:resources,
-        events: events,
-        eventClick: eventClick
+        refetchResourcesOnNavigate: true,
+        resources: '/site/resource-list',
+        //events: events,
+        events:'/site/event-list',
+        eventClick: eventClick,
+       // events: events,
     });
 
 
 });
+
+
 
 var runEventClick = false;
 
@@ -76,3 +82,19 @@ eventClick = function(event) {
         });
 
 };
+
+events = function(start, end, timezone, callback) {
+    $.ajax({
+        url: '/site/event-list',
+        data: {
+            // our hypothetical feed requires UNIX timestamps
+            start: start.unix(),
+            end: end.unix()
+        },
+        success: function(doc) {
+
+            $('#calendar').fullCalendar('addResource', doc.resources[0]);
+            callback(doc.events);
+        }
+    });
+}
