@@ -273,8 +273,8 @@ class SiteController extends Controller
 
     protected function getDataForCalendar($start, $end)
     {
-        list($begin, $end) = x_week_range(date('Y-m-d'));
-
+        $begin = date('Y-m-d',strtotime($start));
+        $end = date('Y-m-d',strtotime($end));
         $odata = OData::getInstance();
         $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
         $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
