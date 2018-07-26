@@ -5,3 +5,4 @@
 # config
 www/config/db.php
 www/config/params.php
+www/config/users.php

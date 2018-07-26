@@ -211,13 +211,17 @@ class SiteController extends Controller
         return $out;
     }
 
-    public function actionSaveFilterMedworkers($medworkerId)
+    public function actionSaveFilterMedworkers($medworkerId = null)
     {
-        $cookies = Yii::$app->response->cookies;
-        $cookies->add(new Cookie([
-            'name' => 'FilterMedworkers',
-            'value' => $medworkerId,
-        ]));
+        if ($medworkerId) {
+            $cookies = Yii::$app->response->cookies;
+            $cookies->add(new Cookie([
+                'name' => 'FilterMedworkers',
+                'value' => $medworkerId,
+            ]));
+            return $this->goHome();
+        }
+        Yii::$app->response->cookies->remove('FilterMedworkers');
         return $this->goHome();
     }
 

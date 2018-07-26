@@ -45,6 +45,7 @@ class FilterMedworker extends \yii\bootstrap\Widget
                     ],
                     'pluginEvents' => [
                         "select2:select" => "function(e) { selectFilterMedworkers(e.params.data.id); }",
+                        "select2:unselect" => "function(e) { selectFilterMedworkers(); }",
                     ]
                 ]) . '</li>',
             ],
