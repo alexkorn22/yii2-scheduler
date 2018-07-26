@@ -63,6 +63,9 @@ class OData extends Model
 
     public function getClients()
     {
+        $this->_filter = [];
+        $this->_filter[] = "DeletionMark eq false";
+        $this->setFilter();
         $data = $this->client->{'Catalog_Клиенты'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
         if(!$this->isClientOk($data)) {
             return [];
@@ -72,6 +75,10 @@ class OData extends Model
 
     public function getEventTypes()
     {
+        $this->_filter = [];
+        $this->_filter[] = "DeletionMark eq false";
+        $this->_filter[] = "Owner_Key eq guid'" . Visit::TYPE_EVENT_VISIT . "'";
+        $this->setFilter();
         $data = $this->client->{'Catalog_ВидыСобытий'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
         if(!$this->isClientOk($data)) {
             return [];
