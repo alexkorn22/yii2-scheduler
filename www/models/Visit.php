@@ -76,8 +76,8 @@ class Visit extends Model
         self::$filter = [];
         $client = new Client(Yii::$app->params['oDataPath'],[
             'auth' => [
-                Yii::$app->params['authLogin'],
-                Yii::$app->params['authPass']
+                Yii::$app->user->identity->loginOneC,
+                Yii::$app->user->identity->passOneC
             ],
             'timeout' => 300,
         ]);
@@ -130,8 +130,6 @@ class Visit extends Model
                 $data->toArray(),
             ];
             Yii::warning($msg,'warning_odata');
-            dd($msg);
-            return false;
         }
         return true;
     }

@@ -24,8 +24,8 @@ class OData extends Model
         parent::__construct();
         $this->client = new Client(Yii::$app->params['oDataPath'],[
             'auth' => [
-                Yii::$app->params['authLogin'],
-                Yii::$app->params['authPass']
+                Yii::$app->user->identity->loginOneC,
+                Yii::$app->user->identity->passOneC
             ],
             'timeout' => 300,
         ]);
@@ -148,9 +148,7 @@ class OData extends Model
                 $data->toArray(),
             ];
             Yii::warning($msg,'warning_odata');
-            var_dump($msg);
-            die();
-            return false;
+            Yii::$app->session->setFlash('error', 'Ошибка запроса к 1С');
         }
         return true;
     }
