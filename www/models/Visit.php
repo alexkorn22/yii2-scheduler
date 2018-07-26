@@ -55,14 +55,13 @@ class Visit extends Model
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
         self::$filter[] = "ТипСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
+        self::setFilterByMedWorkers();
         self::setFilter();
         $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
         $evetsOdata = $data->values();
-        //self::parseMedWorker($evetsOdata);
-
         $arr = self::changeArrOdata($evetsOdata);
         $visits = [];
         foreach ($arr as $item) {
@@ -94,13 +93,28 @@ class Visit extends Model
 
     }
 
+    protected static function setFilterByMedWorkers()
+    {
+        $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
+            $odata = OData::getInstance();
+            return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
+        },3600*24*30);
+        $medWorkersId = array_keys($medWorkers);
+        foreach ($medWorkersId as &$item) {
+            $item = "МедРаботник_Key eq guid'" . $item . "'";
+        }
+        $strResult = implode(' or ', $medWorkersId);
+        if ($strResult != "") {
+            self::$filter[] = "(" . $strResult . ")";
+        }
+    }
+
     protected static function setFilter() {
         $strResult = implode(' and ', self::$filter);
         self::$client->filter($strResult);
     }
 
     protected static function checkOk($data) {
-
 
         if(!self::$client->isOk()) {
             $msg =[
@@ -112,6 +126,7 @@ class Visit extends Model
                 $data->toArray(),
             ];
             Yii::warning($msg,'warning_odata');
+            dd($msg);
             return false;
         }
         return true;
@@ -152,7 +167,7 @@ class Visit extends Model
         foreach ($models as $model) {
             $arr = ArrayHelper::toArray($model);
             ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
-            ArrayHelper::setValue($arr,'editable',true);
+            ArrayHelper::setValue($arr,'editable',false);
             ArrayHelper::setValue($arr,'description',ArrayHelper::getValue($model->odata,'Recorder.Описание'));
             $event = new Event();
             $event->load($arr,'');

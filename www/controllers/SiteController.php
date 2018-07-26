@@ -91,27 +91,20 @@ class SiteController extends Controller
             return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
         },3600);
 
+        // сбрасываем кеш событий
+        Yii::$app->cache->delete('eventList');
 
         list($begin, $end) = x_week_range(date('Y-m-d'));
-        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
-        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
-        $events = ArrayHelper::merge($emptyEvents,$visits);
-        $idMedWorkers = array_unique(ArrayHelper::getColumn($events,'idMedWorker'));
-        $dataMedWorkers = $odata->getMedWorkers($idMedWorkers);
+        $data[$begin] = $this->getEventsForCalendar($begin, $end);
+        Yii::$app->cache->set('eventList',$data, 3600);
         $resources = [];
-        foreach ($dataMedWorkers as $item) {
+        foreach ($medWorkers as $key=> $item) {
             $resources[] = [
-                'id' => $item['Ref_Key'],
-                'title' => $item['Description'],
-                'eventColor' => ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$item['Ref_Key']),
+                'id' => $key,
+                'title' => $item,
+                'eventColor' => ArrayHelper::getValue(Yii::$app->params['medWorkersColors'],$key),
             ];
         }
-        $events = ArrayHelper::toArray($events);
-        $data[$begin] = $events;
-        $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
-            $odata = OData::getInstance();
-            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
-        },3600);
         return $this->render('index',[
             'events' => [],
             'resources' => $resources,
@@ -273,6 +266,8 @@ class SiteController extends Controller
         $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
         $events = ArrayHelper::merge($emptyEvents,$visits);
         $events = ArrayHelper::toArray($events);
+
+
         return $events;
     }
 

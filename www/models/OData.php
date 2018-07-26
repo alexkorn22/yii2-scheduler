@@ -44,14 +44,16 @@ class OData extends Model
     public function getMedWorkers($medWorkersId = null)
     {
         $this->_filter = [];
+        $strResult = 'ОтображатьНаСайте eq true ';
         if (is_array($medWorkersId)) {
-            $filter = [];
+
             foreach ($medWorkersId as $item) {
                 $filter[] = "Ref_Key eq guid'" . $item . "'";
             }
-            $strResult = implode(' or ', $filter);
-            $this->client->filter($strResult);
+            $strResult .= implode(' or ', $filter);
+
         }
+        $this->client->filter($strResult);
         $data = $this->client->{'Catalog_Сотрудники'}->get(null,null,['query'=>['$orderby'=>'Description asc']]);
         if(!$this->isClientOk($data)) {
             return [];
@@ -92,7 +94,7 @@ class OData extends Model
         }
         return $data->values();
     }
-    
+
     // СОХРАНЕНИЕ ДАННЫХ
 
     public function saveVisit(Event $event)
@@ -143,7 +145,8 @@ class OData extends Model
                 $data->toArray(),
             ];
             Yii::warning($msg,'warning_odata');
-           // die();
+            var_dump($msg);
+            die();
             return false;
         }
         return true;
