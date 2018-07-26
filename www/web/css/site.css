@@ -117,3 +117,12 @@ a.desc:after {
 .fc-event {
     cursor: pointer;
 }
+.navbar-medworkers {
+    min-width: 40%;
+    display: flex;
+}
+.navbar-medworkers > .li-select {
+    width: 100%;
+    padding: 8px 25px;
+    padding-left: 0;
+}

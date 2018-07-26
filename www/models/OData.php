@@ -79,13 +79,16 @@ class OData extends Model
         return ArrayHelper::index($data->values(), 'Ref_Key');
     }
 
-    public function eventsOnGraphic($start, $end)
+    public function eventsOnGraphic($start, $end, $medworkerId = "")
     {
         $this->_filter = [];
         // filter date
         $this->_filter[] = "Дата ge datetime'" . date('Y-m-d\TH:i:s',strtotime($start)) . "'";
         $date = strtotime($end) + 3600 * 24;
         $this->_filter[] = "Дата lt datetime'" . date('Y-m-d\TH:i:s',$date) . "'";
+        if ($medworkerId) {
+            $this->_filter[] = "МедРаботник_Key eq guid'" . $medworkerId . "'";
+        }
         $this->setFilter();
 
         $data = $this->client->{'InformationRegister_ГрафикиРаботыВрачей_RecordType'}->get();

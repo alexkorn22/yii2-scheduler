@@ -51,11 +51,11 @@ class Visit extends Model
 
     }
 
-    public static function findByDate($dateBegin = null,$dateEnd = null) {
+    public static function findByDate($dateBegin = null,$dateEnd = null,$curMedworker = '') {
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
         self::$filter[] = "ТипСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
-        self::setFilterByMedWorkers();
+        self::setFilterByMedWorkers($curMedworker);
         self::setFilter();
         $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
@@ -93,13 +93,17 @@ class Visit extends Model
 
     }
 
-    protected static function setFilterByMedWorkers()
+    protected static function setFilterByMedWorkers($curMedworker)
     {
-        $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
-            $odata = OData::getInstance();
-            return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
-        },3600*24*30);
-        $medWorkersId = array_keys($medWorkers);
+        if ($curMedworker) {
+            $medWorkersId[] = $curMedworker;
+        } else {
+            $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
+                $odata = OData::getInstance();
+                return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
+            },3600*24*30);
+            $medWorkersId = array_keys($medWorkers);
+        }
         foreach ($medWorkersId as &$item) {
             $item = "МедРаботник_Key eq guid'" . $item . "'";
         }

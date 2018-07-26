@@ -105,3 +105,7 @@ function getEvents(start, end, timezone, callback) {
         }
     });
 }
+
+function selectFilterMedworkers(medworkerId) {
+    document.location.href = "/site/save-filter-medworkers?medworkerId="+medworkerId;
+}

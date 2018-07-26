@@ -11,6 +11,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\web\Controller;
+use yii\web\Cookie;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\filters\VerbFilter;
@@ -19,6 +20,7 @@ use app\models\ContactForm;
 
 class SiteController extends Controller
 {
+    protected $filterMedworkerId;
     /**
      * {@inheritdoc}
      */
@@ -66,6 +68,12 @@ class SiteController extends Controller
         ];
     }
 
+    public function beforeAction($action)
+    {
+        $this->filterMedworkerId = Yii::$app->request->cookies->getValue('FilterMedworkers');
+        return parent::beforeAction($action);
+    }
+
     /**
      * Displays homepage.
      *
@@ -75,6 +83,8 @@ class SiteController extends Controller
     {
         if ($clear_cache == 'true') {
             Yii::$app->cache->flush();
+            Yii::$app->response->cookies->remove('FilterMedworkers');
+            return $this->goHome();
         }
         $odata = OData::getInstance();
         // кеширование
@@ -82,11 +92,11 @@ class SiteController extends Controller
             $odata = OData::getInstance();
             return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
         },3600*24*30);
-        $typeEvents = Yii::$app->cache->getOrSet('editEventAjax_typeEvents',function (){
+        Yii::$app->cache->getOrSet('editEventAjax_typeEvents',function (){
             $odata = OData::getInstance();
             return ArrayHelper::map($odata->eventTypes,'Ref_Key', 'Description');
         },3600*24*30);
-        $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
+        Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
             $odata = OData::getInstance();
             return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
         },3600);
@@ -99,6 +109,9 @@ class SiteController extends Controller
         Yii::$app->cache->set('eventList',$data, 3600);
         $resources = [];
         foreach ($medWorkers as $key=> $item) {
+            if ($this->filterMedworkerId && $key != $this->filterMedworkerId) {
+                continue;
+            }
             $resources[] = [
                 'id' => $key,
                 'title' => $item,
@@ -117,12 +130,13 @@ class SiteController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
         list($begin, $end) = x_week_range(date('Y-m-d',$start));
         $data = Yii::$app->cache->get('eventList');
-        if (!isset($data[$begin])) {
-            $data[$begin] = $this->getEventsForCalendar($begin, $end);
+        $keyCache = $begin . $this->filterMedworkerId;
+        if (!isset($data[$keyCache])) {
+            $data[$keyCache] = $this->getEventsForCalendar($begin, $end);
             Yii::$app->cache->set('eventList',$data, 3600);
         }
         return [
-            'events' => $data[$begin],
+            'events' => $data[$keyCache],
             'start' => $begin,
             'end' => $end,
         ];
@@ -197,6 +211,16 @@ class SiteController extends Controller
         return $out;
     }
 
+    public function actionSaveFilterMedworkers($medworkerId)
+    {
+        $cookies = Yii::$app->response->cookies;
+        $cookies->add(new Cookie([
+            'name' => 'FilterMedworkers',
+            'value' => $medworkerId,
+        ]));
+        return $this->goHome();
+    }
+
     /**
      * Login action.
      *
@@ -259,16 +283,17 @@ class SiteController extends Controller
         return $this->render('about');
     }
 
+
     protected function getEventsForCalendar($begin, $end)
     {
         $odata = OData::getInstance();
-        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end));
-        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end),$visits);
+        $visits = Visit::getArrayEvents(Visit::findByDate($begin, $end, $this->filterMedworkerId));
+        $emptyEvents = Event::loadFromCalendarMedWorkers($odata->eventsOnGraphic($begin, $end,$this->filterMedworkerId),$visits);
         $events = ArrayHelper::merge($emptyEvents,$visits);
         $events = ArrayHelper::toArray($events);
 
-
         return $events;
     }
+
 
 }
