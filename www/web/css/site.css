@@ -114,3 +114,15 @@ a.desc:after {
     background-color: #d6e9c6;
     border: 1px solid darkred;
 }
+.fc-event {
+    cursor: pointer;
+}
+.navbar-medworkers {
+    min-width: 40%;
+    display: flex;
+}
+.navbar-medworkers > .li-select {
+    width: 100%;
+    padding: 8px 25px;
+    padding-left: 0;
+}

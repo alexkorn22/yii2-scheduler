@@ -4,6 +4,7 @@ namespace app\models;
 
 use function GuzzleHttp\Psr7\str;
 use Kily\Tools1C\OData\Client;
+use function Sodium\add;
 use Yii;
 use yii\base\Model;
 use yii\helpers\ArrayHelper;
@@ -16,6 +17,8 @@ class Visit extends Model
     public $start;
     public $end;
     public $idMedWorker;
+    public $clientId;
+    public $typeId;
     /**
      * @var Client
      */
@@ -23,7 +26,7 @@ class Visit extends Model
     public static $medWorkers;
     protected static $nameType = 'InformationRegister_События_RecordType';
     protected static $filter = [];
-    const TYPE_EVENT_VISIT = '03e07ea8-4441-11e6-98ba-005056b6e181';
+    const TYPE_EVENT_VISIT = '4363fb80-379e-11e6-a303-005056b6e181'; // тип события визит
 
     /**
      * @return array the validation rules.
@@ -39,6 +42,8 @@ class Visit extends Model
                     'id',
                     'title',
                     'idMedWorker',
+                    'clientId',
+                    'typeId',
                 ],
                 function() {return true;}
                 ]
@@ -46,18 +51,17 @@ class Visit extends Model
 
     }
 
-    public static function findByDate($dateBegin = null,$dateEnd = null) {
+    public static function findByDate($dateBegin = null,$dateEnd = null,$curMedworker = '') {
         self::initClient();
         self::setFilterByData($dateBegin, $dateEnd);
-        self::$filter[] = "ВидСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
+        self::$filter[] = "ТипСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
+        self::setFilterByMedWorkers($curMedworker);
         self::setFilter();
-        $data = self::$client->expand('МедРаботник')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
+        $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
         $evetsOdata = $data->values();
-        self::parseMedWorker($evetsOdata);
-
         $arr = self::changeArrOdata($evetsOdata);
         $visits = [];
         foreach ($arr as $item) {
@@ -72,8 +76,8 @@ class Visit extends Model
         self::$filter = [];
         $client = new Client(Yii::$app->params['oDataPath'],[
             'auth' => [
-                Yii::$app->params['authLogin'],
-                Yii::$app->params['authPass']
+                Yii::$app->user->identity->loginOneC,
+                Yii::$app->user->identity->passOneC
             ],
             'timeout' => 300,
         ]);
@@ -89,18 +93,48 @@ class Visit extends Model
 
     }
 
+    protected static function setFilterByMedWorkers($curMedworker)
+    {
+        if ($curMedworker) {
+            $medWorkersId[] = $curMedworker;
+        } else {
+            $medWorkers = Yii::$app->cache->getOrSet('editEventAjax_medWorkers',function (){
+                $odata = OData::getInstance();
+                return ArrayHelper::map($odata->medWorkers,'Ref_Key', 'Description');
+            },3600*24*30);
+            $medWorkersId = array_keys($medWorkers);
+        }
+        foreach ($medWorkersId as &$item) {
+            $item = "МедРаботник_Key eq guid'" . $item . "'";
+        }
+        $strResult = implode(' or ', $medWorkersId);
+        if ($strResult != "") {
+            self::$filter[] = "(" . $strResult . ")";
+        }
+    }
+
     protected static function setFilter() {
         $strResult = implode(' and ', self::$filter);
         self::$client->filter($strResult);
     }
 
     protected static function checkOk($data) {
+
         if(!self::$client->isOk()) {
-            var_dump('Something went wrong: ',self::$client->getHttpErrorCode(),self::$client->getHttpErrorMessage(),self::$client->getErrorCode(),self::$client->getErrorMessage(),$data->toArray());
-            return false;
+            $msg =[
+                'Ошибка при обращении OData: ',
+                self::$client->getHttpErrorCode(),
+                self::$client->getHttpErrorMessage(),
+                self::$client->getErrorCode(),
+                self::$client->getErrorMessage(),
+                $data->toArray(),
+            ];
+            Yii::warning($msg,'warning_odata');
         }
         return true;
     }
+
+
 
     protected  static function changeArrOdata($data) {
         $result = array_map(function($data) {
@@ -108,9 +142,11 @@ class Visit extends Model
                 'id' => $data['Recorder_Key'],
                 'start' => $data['ДатаНачала'],
                 'end' => $data['ДатаОкончания'],
-                'title' => 'Test' . $data['Recorder_Key'],
+                'title' => ArrayHelper::getValue($data,'Клиент.Description'),
                 'odata' => $data,
-                'idMedWorker' => $data['МедРаботник_Key']
+                'idMedWorker' => $data['МедРаботник_Key'],
+                'clientId' => $data['Клиент_Key'],
+                'typeId' => $data['ВидСобытия_Key'],
             ];
         }, $data);
         return $result;
@@ -133,9 +169,11 @@ class Visit extends Model
         foreach ($models as $model) {
             $arr = ArrayHelper::toArray($model);
             ArrayHelper::setValue($arr,'resourceId',$model->idMedWorker);
-            ArrayHelper::setValue($arr,'editable',true);
-            ArrayHelper::setValue($arr,'title','');
-            $result[] = $arr;
+            ArrayHelper::setValue($arr,'editable',false);
+            ArrayHelper::setValue($arr,'description',ArrayHelper::getValue($model->odata,'Recorder.Описание'));
+            $event = new Event();
+            $event->load($arr,'');
+            $result[] = $event;
         }
         return $result;
     }
@@ -144,6 +182,17 @@ class Visit extends Model
         $result = [];
         foreach (self::$medWorkers as $medWorker) {
             $result[] = $medWorker;
+        }
+        return $result;
+    }
+
+    public static function arrayForCalendarMedWorkers($visits)
+    {
+        $result = [];
+        $visits = ArrayHelper::toArray($visits);
+        foreach ($visits as $visit) {
+            $day = date('Y-m-d',strtotime($visit['start']));
+            $result[$day][] = $visit;
         }
         return $result;
     }

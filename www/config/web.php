@@ -9,6 +9,8 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'language' => 'ru-RU',
+    'name' => 'Планировщик',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -42,6 +44,11 @@ $config = [
                     'class' => 'yii\log\FileTarget',
                     'levels' => ['error', 'warning'],
                 ],
+                [
+                    'class' => 'yii\log\FileTarget', //в файл
+                    'categories' => ['odata_fail'], //категория логов
+                    'logFile' => '@runtime/logs/odata.log', //куда сохранять
+                ]
             ],
         ],
         'db' => $db,
