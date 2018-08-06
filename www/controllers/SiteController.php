@@ -159,12 +159,15 @@ class SiteController extends Controller
                 $odata = OData::getInstance();
                 return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
             },3600);
-
+            $clientText = '';
+            if (isset($clients[$model->clientId])) {
+                $clientText = $clients[$model->clientId];
+            }
             return $this->renderAjax('_editEventModal',[
                 'model' => $model,
                 'typeEvents' => $typeEvents,
                 'medWorkers' => $medWorkers,
-                'clientText' => $clients[$model->clientId],
+                'clientText' => $clientText,
             ]);
         }
         // POST save

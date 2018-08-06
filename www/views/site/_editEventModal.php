@@ -70,7 +70,7 @@ use \kartik\select2\Select2;
             </div>
             <div class="modal-footer">
                 <?= Html::submitButton('Сохранить',['class'=> 'btn btn-primary'])?>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
             </div>
             <?php ActiveForm::end() ?>
         </div>
