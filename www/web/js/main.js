@@ -1,12 +1,16 @@
 $(function() { // document ready
 
-
+    //$(".navbar-brand").text($(".wrap").width());
 
 });
 
 $('#calendar').fullCalendar({
     schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
     defaultView: 'agendaDay',
+    contentHeight : getCalendarHeight,
+    windowResize: function(view) {
+        $('#calendar').fullCalendar('option', 'contentHeight', getCalendarHeight());
+    },
     // defaultDate: '2018-04-07',
     //editable: true,
     nowIndicator: true,
@@ -112,4 +116,15 @@ function selectFilterMedworkers(medworkerId = null) {
         return;
     }
     document.location.href = "/site/save-filter-medworkers?medworkerId="+medworkerId;
+}
+
+function getCalendarHeight() {
+
+    let allHeight = $(".wrap").height();
+    //header
+    allHeight -= 75;
+    //footer
+    allHeight -= 60;
+    return allHeight;
+
 }
