@@ -126,3 +126,12 @@ a.desc:after {
     padding: 8px 25px;
     padding-left: 0;
 }
+
+@media screen and (max-width:800px) {
+    .navbar-brand {
+        font-size: 14px;
+    }
+    .navbar-nav {
+        font-size: 12px;
+    }
+}
