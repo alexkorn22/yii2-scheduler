@@ -84,6 +84,8 @@ class SiteController extends Controller
         if ($clear_cache == 'true') {
             Yii::$app->cache->flush();
             Yii::$app->response->cookies->remove('FilterMedworkers');
+            Yii::$app->session->remove('calendarView');
+            Yii::$app->session->remove('calendarDay');
             return $this->goHome();
         }
         $odata = OData::getInstance();
@@ -104,7 +106,7 @@ class SiteController extends Controller
         // сбрасываем кеш событий
         Yii::$app->cache->delete('eventList');
 
-        list($begin, $end) = x_week_range(date('Y-m-d'));
+        list($begin, $end) = x_week_range(Yii::$app->session->get('calendarDay',date('Y-m-d')));
         $data[$begin] = $this->getEventsForCalendar($begin, $end);
         Yii::$app->cache->set('eventList',$data, 3600);
         $resources = [];
@@ -122,6 +124,8 @@ class SiteController extends Controller
             'events' => [],
             'resources' => $resources,
             'currentPeriod' => ['start' => $begin,'end' => $end],
+            'defaultView' => Yii::$app->session->get('calendarView','agendaDay'),
+            'calendarDay' => Yii::$app->session->get('calendarDay',date('Y-m-d')),
         ]);
     }
 
@@ -228,6 +232,23 @@ class SiteController extends Controller
         return $this->goHome();
     }
 
+    public function actionChangeCalendarView($view = 'agendaDay',$day = null)
+    {
+        if (!Yii::$app->request->isAjax) {
+            return new NotFoundHttpException();
+        }
+        if ($day) {
+            $calendarDay = date('Y-m-d',$day);
+        } else {
+            $calendarDay = date('Y-m-d');
+        }
+
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        Yii::$app->session->set('calendarView',$view);
+        Yii::$app->session->set('calendarDay',$calendarDay);
+        return ['success' => true];
+    }
+    
     /**
      * Login action.
      *

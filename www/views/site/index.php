@@ -17,5 +17,7 @@ $this->title = 'Планировщик';
     var currentPeriod = <?php echo json_encode($currentPeriod)?>;
     var curStart = new Date('1920-12-01');
     var curEnd = new Date('1920-12-01');
+    var defaultView = '<?=$defaultView?>';
+    var calendarDay = '<?=$calendarDay?>';
 
 </script>

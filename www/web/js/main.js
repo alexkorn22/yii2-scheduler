@@ -6,12 +6,12 @@ $(function() { // document ready
 
 $('#calendar').fullCalendar({
     schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-    defaultView: 'agendaDay',
+    defaultView: defaultView,
     contentHeight : getCalendarHeight,
     windowResize: function(view) {
         $('#calendar').fullCalendar('option', 'contentHeight', getCalendarHeight());
     },
-    // defaultDate: '2018-04-07',
+    defaultDate: calendarDay,
     //editable: true,
     nowIndicator: true,
     //selectable: true,
@@ -51,6 +51,7 @@ $('#calendar').fullCalendar({
     resources: resources,
     events: getEvents,
     eventClick: eventClick,
+    viewRender: viewCurRender,
     // events: events,
 });
 
@@ -131,4 +132,17 @@ function getCalendarHeight() {
     allHeight -= 60;
     return allHeight;
 
+}
+
+function viewCurRender(view, el) {
+    $.ajax({
+        url: '/site/change-calendar-view',
+        method: "GET",
+        data: {
+            view : view.name,
+            day : view.start.unix(),
+        },
+        success: function(data) {
+        }
+    });
 }
