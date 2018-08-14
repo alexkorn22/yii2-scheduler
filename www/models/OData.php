@@ -129,10 +129,12 @@ class OData extends Model
             $dataEvent['Date'] = date(self::DATE_FORMAT);
             $dataEvent['ТипСобытия_Key'] = Visit::TYPE_EVENT_VISIT;
             $data = $this->client->{'Document_Событие'}->create($dataEvent);
-            $event->id = $data->getLastId();
         }
         if(!$this->isClientOk($data)) {
             return false;
+        }
+        if (!$event->id) {
+            $event->id = $data->getLastId();
         }
         $data = $this->client->{'Document_Событие'}->id($event->id)->post();
         if(!$this->isClientOk($data)) {
@@ -146,16 +148,21 @@ class OData extends Model
     protected function isClientOk($data = [])
     {
         if(!$this->client->isOk()) {
+            $arr = $data;
+            if (is_object($data)) {
+                $arr = $data->toArray();
+            }
             $msg =[
                 'Ошибка при обращении OData: ',
                 $this->client->getHttpErrorCode(),
                 $this->client->getHttpErrorMessage(),
                 $this->client->getErrorCode(),
                 $this->client->getErrorMessage(),
-                $data->toArray(),
+                $arr,
             ];
             Yii::warning($msg,'warning_odata');
             Yii::$app->session->setFlash('error', 'Ошибка запроса к 1С');
+            return false;
         }
         return true;
     }

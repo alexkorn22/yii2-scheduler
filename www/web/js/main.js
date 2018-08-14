@@ -39,6 +39,10 @@ $('#calendar').fullCalendar({
             //// uncomment this line to group by day FIRST with resources underneath
             groupByDateAndResource: true
         },
+        agendaDay: {
+            titleFormat: "D MMMM YYYY, dddd",
+
+        },
     },
     //// uncomment this line to hide the all-day slot
     allDaySlot: false,
