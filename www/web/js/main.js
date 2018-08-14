@@ -135,8 +135,6 @@ function getCalendarHeight() {
 }
 
 function viewCurRender(view, el) {
-    console.log(view);
-    console.log(el);
     $.ajax({
         url: '/site/change-calendar-view',
         method: "GET",
