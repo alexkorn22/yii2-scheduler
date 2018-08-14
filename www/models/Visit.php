@@ -57,7 +57,7 @@ class Visit extends Model
         self::$filter[] = "ТипСобытия_Key eq guid'" . self::TYPE_EVENT_VISIT. "'";
         self::setFilterByMedWorkers($curMedworker);
         self::setFilter();
-        $data = self::$client->expand('Recorder,Клиент')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
+        $data = self::$client->expand('Recorder,Клиент,ВидСобытия')->get(null,null,['query'=>['$orderby'=>'ДатаНачала asc']]);
         if (!self::checkOk($data)) {
             return [];
         }
@@ -142,7 +142,7 @@ class Visit extends Model
                 'id' => $data['Recorder_Key'],
                 'start' => $data['ДатаНачала'],
                 'end' => $data['ДатаОкончания'],
-                'title' => ArrayHelper::getValue($data,'Клиент.Description'),
+                'title' => self::getTitleCart($data),
                 'odata' => $data,
                 'idMedWorker' => $data['МедРаботник_Key'],
                 'clientId' => $data['Клиент_Key'],
@@ -150,6 +150,12 @@ class Visit extends Model
             ];
         }, $data);
         return $result;
+    }
+
+    protected static function getTitleCart($data) {
+        $res = ArrayHelper::getValue($data,'Клиент.Description') . " / " . trim(ArrayHelper::getValue($data,'Recorder.Описание'));
+        $res .= " (" . ArrayHelper::getValue($data,'ВидСобытия.Description') . ")";
+        return $res;
     }
 
     protected static function parseMedWorker($evetsOdata) {
