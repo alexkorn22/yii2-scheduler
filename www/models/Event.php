@@ -8,11 +8,13 @@ use yii\helpers\ArrayHelper;
 class Event extends Model
 {
     const DATE_FORMAT = 'Y-m-d\TH:i:s';
+    const NAME_FIELD_PHONE = 'ТелефонМобильный';
     public $id;
     public $start;
     public $end;
     public $idMedWorker;
     public $clientId;
+    public $clientPhone;
     public $description;
     public $title;
     public $editable = false;
@@ -30,7 +32,7 @@ class Event extends Model
                 'required',
             ],
             [
-                ['description', 'title', 'id'],
+                ['description', 'title', 'id', 'clientPhone'],
                 'safe',
             ],
             [
@@ -47,6 +49,7 @@ class Event extends Model
             'end' => 'Дата окончания',
             'idMedWorker' => 'Медработник',
             'clientId' => 'Клиент',
+            'clientPhone' => 'Номер телефона',
             'description' => 'Описание',
             'typeId' => 'Вид визита',
         ];

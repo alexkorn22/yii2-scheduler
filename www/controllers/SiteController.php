@@ -100,7 +100,7 @@ class SiteController extends Controller
         },3600*24*30);
         Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
             $odata = OData::getInstance();
-            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+            return $odata->clients;
         },3600);
 
         // сбрасываем кеш событий
@@ -161,17 +161,18 @@ class SiteController extends Controller
             },3600*24*30);
             $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
                 $odata = OData::getInstance();
-                return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
+                return $odata->clients;
             },3600);
-            $clientText = '';
+            $dataCurClient = [];
             if (isset($clients[$model->clientId])) {
-                $clientText = $clients[$model->clientId];
+                $dataCurClient = $clients[$model->clientId];
+                $model->clientPhone = ArrayHelper::getValue($dataCurClient,Event::NAME_FIELD_PHONE);
             }
             return $this->renderAjax('_editEventModal',[
                 'model' => $model,
                 'typeEvents' => $typeEvents,
                 'medWorkers' => $medWorkers,
-                'clientText' => $clientText,
+                'dataCurClient' => $dataCurClient,
             ]);
         }
         // POST save
@@ -190,15 +191,16 @@ class SiteController extends Controller
         $out = ['results'];
         $clients =  Yii::$app->cache->getOrSet('editEventAjax_clients',function (){
             $odata = OData::getInstance();
-            return ArrayHelper::map($odata->clients,'Ref_Key', 'Description');
-        },60*5);
+            return $odata->clients;
+        },3600);
         $q = trim($q);
         if ($q) {
             foreach ($clients as $key=>$client) {
-                if (mb_stripos($client, $q) !== false) {
+                if (mb_stripos($client['Description'], $q) !== false) {
                     $out['results'][] = [
                         'id' => $key,
-                        'text' => $client,
+                        'text' => $client['Description'],
+                        'phone'=>$client[Event::NAME_FIELD_PHONE],
                     ];
                 }
             }
@@ -208,7 +210,8 @@ class SiteController extends Controller
                 $i++;
                 $out['results'][] = [
                     'id' => $key,
-                    'text' => $client,
+                    'text' =>$client['Description'],
+                    'phone'=>$client[Event::NAME_FIELD_PHONE],
                 ];
                 if ($i == 20) {
                     break;
