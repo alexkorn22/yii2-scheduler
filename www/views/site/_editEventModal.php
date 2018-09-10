@@ -1,10 +1,13 @@
 <?php
+/* @var $this yii\web\View */
+/* @var $model \app\models\Event */
+
 use yii\bootstrap\ActiveForm;
 use yii\helpers\Html;
 use \kartik\select2\Select2;
+use \yii\helpers\ArrayHelper;
+use app\models\Event;
 
-/* @var $this yii\web\View */
-/* @var $model \app\models\Event */
 ?>
 <div class="modal" id="modalEvent" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -51,7 +54,7 @@ use \kartik\select2\Select2;
                         ]
                     ]);?>
                 <?= $form->field($model, 'clientId')->widget(Select2::classname(), [
-                    'initValueText' => $clientText,
+                    'initValueText' => ArrayHelper::getValue($dataCurClient,'Description'),
                     'language' => 'ru',
                     'options' => ['placeholder' => 'Выберите клиента ...'],
                     'pluginOptions' => [
@@ -63,8 +66,15 @@ use \kartik\select2\Select2;
                             'delay' => 600,
                             'data' => new \yii\web\JsExpression('function(params) { return {q:params.term}; }')
                         ],
-                    ]
+
+                    ],
+                    'pluginEvents' => [
+                        "select2:selecting" => "function(e) { 
+                            $('#event-clientphone').val(e.params.args.data.phone);
+                        }",
+                    ],
                 ]); ?>
+                <?= $form->field($model, 'clientPhone')->textInput(['readonly'=>'readonly']) ?>
                 <?= $form->field($model, 'description')->textarea() ?>
 
             </div>
